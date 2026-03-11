@@ -152,6 +152,7 @@ jobs:
 
             export DOCKER_TAG=${{ github.sha }}
             echo ${{secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ vars.DOCKERHUB_USER }} --password-stdin
-             cd /home/ubuntu/AI-BankApp-DevOps 
+             cd ~/home/mabdullah/project/AI-BankApp-DevOps
+
             docker compose -f docker-compose.yml down
             docker compose -f docker-compose.yml up -d --pull always
