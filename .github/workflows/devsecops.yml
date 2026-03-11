@@ -1,0 +1,145 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+# ---------------- BUILD ----------------
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: 21
+
+
+    - name: Build Application
+      run: mvn clean package -DskipTests
+
+
+# ---------------- SAST SCAN ----------------
+
+  sast-scan:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Run CodeQL Scan
+      uses: github/codeql-action/init@v3
+      with:
+        languages: java
+
+    - uses: github/codeql-action/analyze@v3
+
+
+# ---------------- DEPENDENCY SCAN ----------------
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: bankapp
+        path: .
+        format: HTML
+
+
+# ---------------- DOCKER BUILD ----------------
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [build, dependency-scan]
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Login DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Docker Image
+      run: |
+        docker build -t ${{ vars.DOCKERHUB_USER }}/bankapp:${{ github.sha }} .
+
+
+# ---------------- IMAGE SECURITY SCAN ----------------
+
+  image-scan:
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Trivy Scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ vars.DOCKERHUB_USER }}/bankapp:${{ github.sha }}
+
+
+# ---------------- PUSH IMAGE ----------------
+
+  push-image:
+    runs-on: ubuntu-latest
+    needs: image-scan
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Login DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USER }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Push Image
+      run: |
+        docker build -t ${{ vars.DOCKERHUB_USER }}/bankapp:latest .
+        docker push ${{ vars.DOCKERHUB_USER }}/bankapp:latest
+
+
+# ---------------- DEPLOY ----------------
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: push-image
+
+    steps:
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_KEY }}
+
+        script: |
+          docker pull ${{ vars.DOCKERHUB_USER }}/bankapp:latest
+          docker stop bankapp || true
+          docker rm bankapp || true
+          docker run -d -p 8080:8080 --name bankapp ${{ vars.DOCKERHUB_USER }}/bankapp:latest
