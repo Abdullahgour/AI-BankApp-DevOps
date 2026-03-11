@@ -136,15 +136,15 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           
           source: |
-            docker-compose.yml
-            Dockerfile
-            server.js
-            package.json
-            public/
+              project/AI-BankApp-DevOps/docker-compose.yml
+              project/AI-BankApp-DevOps/Dockerfile
+              project/AI-BankApp-DevOps/server.js
+              project/AI-BankApp-DevOps/package.json
+              project/AI-BankApp-DevOps/public/
           target: ~/devops
           rm: false
           strip_components: 1
-          working-directory: ./project/AI-BankApp-DevOps
+          
      - name: SSH to prod server & run the app 
        uses: appleboy/ssh-action@v1
        with:
