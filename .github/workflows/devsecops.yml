@@ -152,7 +152,12 @@ jobs:
 
             export DOCKER_TAG=${{ github.sha }}
             echo ${{secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ vars.DOCKERHUB_USER }} --password-stdin
-            cd ~/project/AI-BankApp-DevOps
+           # cd ~/project/AI-BankApp-DevOps
 
-            docker compose -f docker-compose.yml down
-            docker compose -f docker-compose.yml up -d --pull always
+           # docker compose -f docker-compose.yml down
+           # docker compose -f docker-compose.yml up -d --pull always
+        
+          run: |
+           docker compose -f docker-compose.yml down
+           docker compose -f docker-compose.yml up -d --pull always
+              working-directory: ./project/AI-BankApp-DevOps
