@@ -119,4 +119,4 @@ jobs:
           docker pull ${{ vars.DOCKERHUB_USER }}/bankapp:latest
           docker stop bankapp || true
           docker rm bankapp || true
-          docker run -d -p 8080:8080 --name bankapp ${{ vars.DOCKERHUB_USER }}/bankapp:latest
+          docker run -d -p 80:8080 --name bankapp ${{ vars.DOCKERHUB_USER }}/bankapp:latest
