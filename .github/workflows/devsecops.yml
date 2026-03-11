@@ -141,8 +141,10 @@ jobs:
             server.js
             package.json
             public/
-          target: ~/devops    
-
+          target: ~/devops
+          rm: false
+          strip_components: 1
+          working-directory: ./project/AI-BankApp-DevOps
      - name: SSH to prod server & run the app 
        uses: appleboy/ssh-action@v1
        with:
