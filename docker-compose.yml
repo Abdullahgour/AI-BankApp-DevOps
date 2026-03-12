@@ -27,8 +27,8 @@ services:
        MYSQL_HOST: mysql
        MYSQL_PORT: 3306
        MYSQL_DATABASE: bankappdb
-       MYSQL_USER: banker
-       MYSQL_PASSWORD: user1
+       MYSQL_USER: root
+       MYSQL_PASSWORD: Test@123
     depends_on:
        mysql:
         condition: service_healthy
