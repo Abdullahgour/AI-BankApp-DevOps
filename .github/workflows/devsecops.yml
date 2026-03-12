@@ -140,9 +140,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           
-          source: |
-           Dockerfile
-           docker-compose.yml
+          source: "."
           target: ~/devops
          
      - name: SSH to prod server & run the app 
