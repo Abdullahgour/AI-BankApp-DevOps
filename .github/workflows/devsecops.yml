@@ -127,6 +127,11 @@ jobs:
             sudo apt-get update && sudo apt-get install docker.io docker-compose-v2 -y
             sudo usermod -aG docker $USER && newgrp docker 
             mkdir -p devops
+     - name: Checkout Repository
+       uses: actions/checkout@v4
+
+     - name: List files (debug)
+       run: ls -la
 
      - name: Copy docker compose files via SSH
        uses: appleboy/scp-action@v1
